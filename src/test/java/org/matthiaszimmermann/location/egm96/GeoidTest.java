@@ -1,7 +1,6 @@
 package org.matthiaszimmermann.location.egm96;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -78,8 +77,7 @@ public class GeoidTest {
 
 	@Test
 	public void testInit() {
-		Geoid g = new Geoid();
-		boolean resultInit = g.init();
+		boolean resultInit = Geoid.init();
 		Assert.assertTrue(resultInit);
 	}
 
@@ -205,7 +203,7 @@ public class GeoidTest {
 	 */
 	@Test
 	public void testGetOffsetsAgainstNgaTests() {
-		// tolerances are tweaked to accept difference between blinear and qubic interpolation
+		// tolerances are tweaked to accept difference between bilinear and qubic interpolation
 		Assert.assertEquals(-31.628, Geoid.getOffset(new Location( 38.6281550, 269.7791550)), 0.05);
 		Assert.assertEquals( -2.969, Geoid.getOffset(new Location(-14.6212170, 305.0211140)), 0.05);
 		Assert.assertEquals(-43.575, Geoid.getOffset(new Location( 46.8743190, 102.4487290)), 0.05);

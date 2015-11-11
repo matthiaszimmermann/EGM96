@@ -1,7 +1,6 @@
 package org.matthiaszimmermann.location.egm96;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
@@ -21,7 +20,7 @@ public class Geoid {
 	public static final double OFFSET_INVALID = -9999.99;
 	public static final double OFFSET_MISSING = 9999.99;
 	
-	public static final String FILE_GEOID_GZ = "/EGM96.complete.txt.gz";
+	public static final String FILE_GEOID_GZ = "/EGM96complete.dat.gz";
 
 	private static final int ROWS = 719;  // (89.75 + 89.75)/0.25 + 1 = 719
 	private static final int COLS = 1440; // 359.75/0.25 + 1 = 1440
@@ -48,6 +47,25 @@ public class Geoid {
 	private static double offset_south_pole = 0;
 	private static boolean s_model_ok = false;
 
+	public static void main(String [] args) {
+		if(args.length != 2) {
+			System.err.println("usage: java Geoid lat long");
+			System.exit(-1);
+		}
+		
+		double lat = Double.parseDouble(args[0]);
+		double lng = Double.parseDouble(args[1]);
+		
+		init();
+		
+		StringBuffer b = new StringBuffer();
+		b.append("lat=").append(lat).append(" ");
+		b.append("long=").append(lng).append(" ");
+		b.append("offset=").append(getOffset(new Location(lat, lng)));
+		
+		System.out.println(b.toString());
+	}
+	
 	public static boolean init() {
 		if(s_model_ok) {
 			return true;
@@ -63,6 +81,7 @@ public class Geoid {
 		} 
 		catch (Exception e) {
 			s_model_ok = false;
+			System.err.println("failed to read file '"+FILE_GEOID_GZ+"'");
 		}
 
 		return s_model_ok;
@@ -83,8 +102,6 @@ public class Geoid {
 		Location q12 = getUpperLocation(q11);
 		Location q21 = getRightLocation(q11);
 		Location q22 = getUpperLocation(q21);
-		
-		System.out.println("ul=" + q12 + ", ur=" + q22 + ", ll=" + q11 + ", lr=" + q21);
 		
 		return bilinearInterpolation(location, q11, q12, q21, q22);
 	}
@@ -196,12 +213,6 @@ public class Geoid {
 		return offset[i][j];
 	}
 	
-	private static File getFileFromResource(String filename) {
-		ClassLoader classLoader = Geoid.class.getClassLoader();
-		File file = new File(classLoader.getResource(filename).getFile());
-		return file;
-	}
-
 	private static boolean readGeoidOffsets(BufferedReader br) throws Exception {
 		assignMissingOffsets();
 		
