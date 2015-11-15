@@ -1,4 +1,4 @@
-# EGM96
+# EGM96  <img src="https://travis-ci.org/matthiaszimmermann/EGM96.svg">
 
 Java Library to compute the EGM96 offset against WGS84 altitudes reported by simple GPS receivers. 
 
