@@ -96,14 +96,46 @@ public class Geoid {
 			return getGridOffset(lat, lng);
 		}
 		
+		Location [][] q = new Location[4][4];
+		
 		// get four grid locations surrounding the target location
 		// used for bilinear interpolation
-		Location q11 = getGridFloorLocation(lat, lng);
-		Location q12 = getUpperLocation(q11);
-		Location q21 = getRightLocation(q11);
-		Location q22 = getUpperLocation(q21);
+		q[1][1] = getGridFloorLocation(lat, lng);
+		q[1][2] = getUpperLocation(q[1][1]);
+		q[2][1] = getRightLocation(q[1][1]);
+		q[2][2] = getUpperLocation(q[2][1]);
 		
-		return bilinearInterpolation(location, q11, q12, q21, q22);
+		// check if we can get points for bicubic interpolation
+		if(q[1][1].getLatitude() >= LATITUDE_MIN_GRID && q[1][2].getLatitude() <= LATITUDE_MAX_GRID) {
+			// left column
+			q[0][1] = getLeftLocation(q[1][1]);
+			q[0][2] = getUpperLocation(q[0][1]);
+			q[0][3] = getUpperLocation(q[0][2]);
+			
+			// top row
+			q[1][3] = getRightLocation(q[0][3]);
+			q[2][3] = getRightLocation(q[1][3]);
+			q[2][3] = getRightLocation(q[1][3]);
+			q[3][3] = getRightLocation(q[2][3]);
+			
+			// bottom row
+			q[0][0] = getLowerLocation(q[0][1]);
+			q[1][0] = getRightLocation(q[0][0]);
+			q[1][0] = getRightLocation(q[0][0]);
+			q[2][0] = getRightLocation(q[1][0]);
+
+			// right column
+			q[3][0] = getRightLocation(q[2][0]);
+			q[3][1] = getUpperLocation(q[3][0]);
+			q[3][2] = getUpperLocation(q[3][1]);
+						
+//			return bilinearInterpolation(location, q[1][1], q[1][2], q[2][1], q[2][2]);
+			return bicubicSplineInterpolation(location, q);
+			
+		}
+		else {
+			return bilinearInterpolation(location, q[1][1], q[1][2], q[2][1], q[2][2]);
+		}
 	}
 	
 	/**
@@ -138,6 +170,34 @@ public class Geoid {
 		return (f11 + f12 + f21 + f22) / ((x2 - x1) * (y2 - y1));
 	}
 	
+	/**
+	 * Bicubic spline: If you provide a 4x4 grid of values for geometric quantities in u and v, 
+	 * this class creates an object that will interpolate a Bicubic spline to give you the value 
+	 * within any point of a unit tile in (u,v) space.
+	 * If you want to create a spline surface, you can make a two dimensional array of such objects.
+	 * 
+	 * {@link http://mrl.nyu.edu/~perlin/cubic/Cubic_java.html}
+	 * @return
+	 */	
+    static double bicubicSplineInterpolation(Location target, Location [][] grid) {
+		double G [][] = new double [4][4];
+
+		for(int i = 0; i < 4; i++) {
+			for(int j = 0; j < 4; j++) {
+				G[i][j] = getGridOffset(grid[i][j]);
+			}
+		}
+		
+		double u1 = grid[1][1].getLatitude();
+		double v1 = grid[1][1].getLongitude();
+				
+		double u = (target.getLatitude() - u1 + LATITUDE_STEP) / (4 * LATITUDE_STEP);
+		double v = (target.getLongitude() - v1 + LONGITIDE_STEP) / (4 * LONGITIDE_STEP);
+		Cubic c = new Cubic(Cubic.BEZIER, G);
+		
+    	return c.eval(u, v);
+    }	
+    
 	static Location getUpperLocation(Location location) {
 		double lat = location.getLatitude();
 		double lng = location.getLongitude();
@@ -159,6 +219,36 @@ public class Geoid {
 		}
 		
 		return new Location(lat, lng);
+	}
+	
+	static Location getLowerLocation(Location location) {
+		double lat = location.getLatitude();
+		double lng = location.getLongitude();
+		
+		if(lat == LATITUDE_MIN_GRID) {
+			lat = LATITUDE_MIN;
+		}
+		else if(lat == LATITUDE_ROW_FIRST) {
+			lat = LATITUDE_MIN_GRID;
+		}
+		else if(lat == LATITUDE_MAX) {
+			lat = LATITUDE_MAX_GRID;
+		}
+		else if(lat == LATITUDE_MAX_GRID) {
+			lat = LATITUDE_ROW_FIRST;
+		}
+		else {
+			lat -= LATITUDE_STEP;
+		}
+		
+		return new Location(lat, lng);
+	}
+	
+	static Location getLeftLocation(Location location) {
+		double lat = location.getLatitude();
+		double lng = location.getLongitude();
+		
+		return new Location(lat, lng - LATITUDE_STEP);
 	}
 	
 	static Location getRightLocation(Location location) {
@@ -330,6 +420,7 @@ public class Geoid {
 		return lat_in_bounds;
 	}
 	
+	@SuppressWarnings("unused")
 	private static boolean lngOk(double lng) {
 		boolean lng_in_bounds = lng >= LONGITIDE_MIN && lng <= LONGITIDE_MAX;
 		return lng_in_bounds;

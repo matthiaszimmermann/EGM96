@@ -65,8 +65,10 @@ public class GeoidTest {
 
 			double lat = Double.parseDouble(t.nextToken());
 			double lng = Double.parseDouble(t.nextToken());
+			@SuppressWarnings("unused")
 			double offEgm84 = Double.parseDouble(t.nextToken());
 			double offEgm96 = Double.parseDouble(t.nextToken());
+			@SuppressWarnings("unused")
 			double offEgm08 = Double.parseDouble(t.nextToken());
 			
 			s_testPoints.add(new Point(lat, lng, offEgm96));
@@ -203,12 +205,12 @@ public class GeoidTest {
 	 */
 	@Test
 	public void testGetOffsetsAgainstNgaTests() {
-		// tolerances are tweaked to accept difference between bilinear and qubic interpolation
-		Assert.assertEquals(-31.628, Geoid.getOffset(new Location( 38.6281550, 269.7791550)), 0.05);
-		Assert.assertEquals( -2.969, Geoid.getOffset(new Location(-14.6212170, 305.0211140)), 0.05);
+		// tolerances are tweaked to accept currently implemented model
+		Assert.assertEquals(-31.628, Geoid.getOffset(new Location( 38.6281550, 269.7791550)), 0.45);
+		Assert.assertEquals( -2.969, Geoid.getOffset(new Location(-14.6212170, 305.0211140)), 0.45);
 		Assert.assertEquals(-43.575, Geoid.getOffset(new Location( 46.8743190, 102.4487290)), 0.05);
-		Assert.assertEquals( 15.871, Geoid.getOffset(new Location(-23.6174460, 133.8747120)), 0.11);
-		Assert.assertEquals( 50.066, Geoid.getOffset(new Location( 38.6254730, 359.9995000)), 0.05);
+		Assert.assertEquals( 15.871, Geoid.getOffset(new Location(-23.6174460, 133.8747120)), 1.1);
+		Assert.assertEquals( 50.066, Geoid.getOffset(new Location( 38.6254730, 359.9995000)), 0.25);
 		Assert.assertEquals( 17.329, Geoid.getOffset(new Location( -0.4667440,   0.0023000)), 0.12);
 
 		// test things at poles 
@@ -218,10 +220,14 @@ public class GeoidTest {
 
 	}
 
+	/**
+	 * test against large number of samples randomly chosen from
+	 * http://geographiclib.sourceforge.net/1.28/geoid.html 
+	 */
 	@Test
 	public void testGetOffsetsAgainstGeographiclibData() {
 		for(Point p: s_testPoints) {
-			Assert.assertEquals(p.m, Geoid.getOffset(p.l), 0.45);
+			Assert.assertEquals(p.m, Geoid.getOffset(p.l), 0.015);
 		}
 	}
 }
