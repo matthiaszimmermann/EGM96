@@ -17,8 +17,8 @@ import org.matthiaszimmermann.location.Location;
  */
 public class Geoid {
 
-	public static final double OFFSET_INVALID = -9999.99;
-	public static final double OFFSET_MISSING = 9999.99;
+	public static final short OFFSET_INVALID = -0x8000;
+	public static final short OFFSET_MISSING = 0x7fff;
 	
 	public static final String FILE_GEOID_GZ = "/EGM96complete.dat.gz";
 
@@ -42,9 +42,10 @@ public class Geoid {
 	public static final String INVALID_OFFSET = "-9999.99";
 	public static final String COMMENT_PREFIX = "//";
 
-	private static double [][] offset = new double[ROWS][COLS];
-	private static double offset_north_pole = 0;
-	private static double offset_south_pole = 0;
+	//Store in 'fixed point format' 16-bit short (in 1/100m (cm)) instead of 64-bit double
+	private static short [][] offset = new short[ROWS][COLS];
+	private static short offset_north_pole = 0;
+	private static short offset_south_pole = 0;
 	private static boolean s_model_ok = false;
 
 	public static void main(String [] args) {
@@ -305,7 +306,7 @@ public class Geoid {
 		int i = latToI(lat);
 		int j = lngToJ(lng);
 		
-		return offset[i][j];
+		return offset[i][j]/100.0d;
 	}
 	
 	private static boolean readGeoidOffsets(BufferedReader br) throws Exception {
@@ -328,7 +329,7 @@ public class Geoid {
 
 				double lat = Double.parseDouble(t.nextToken());
 				double lng = Double.parseDouble(t.nextToken());
-				double off = Double.parseDouble(t.nextToken());
+				short off = (short)(Double.parseDouble(t.nextToken())*100d);
 
 				if(latLongOk(lat, lng, l)) {					
 					int i_lat = 0;
