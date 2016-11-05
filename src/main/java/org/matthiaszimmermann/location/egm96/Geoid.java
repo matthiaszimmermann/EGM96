@@ -86,8 +86,13 @@ public class Geoid {
 
 		return s_model_ok;
 	}
-	
-	public static double getOffset(Location location) {
+
+    public static double getOffset(double lat, double lon) {
+        Location location = new Location(lat, lon);
+        return getOffset(location);
+    }
+
+    public static double getOffset(Location location) {
 		double lat = location.getLatitude();
 		double lng = location.getLongitude();
 		
