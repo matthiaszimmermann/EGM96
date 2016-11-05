@@ -19,8 +19,9 @@ public class Geoid {
 
 	public static final short OFFSET_INVALID = -0x8000;
 	public static final short OFFSET_MISSING = 0x7fff;
-	
-	public static final String FILE_GEOID_GZ = "/EGM96complete.dat.gz";
+
+	public static final String FILE_GEOID = "EGM96complete.dat";
+	public static final String FILE_GEOID_GZ = "/"+FILE_GEOID + ".gz";
 
 	private static final int ROWS = 719;  // (89.75 + 89.75)/0.25 + 1 = 719
 	private static final int COLS = 1440; // 359.75/0.25 + 1 = 1440
@@ -66,16 +67,22 @@ public class Geoid {
 		
 		System.out.println(b.toString());
 	}
-	
+
 	public static boolean init() {
+		return init(null);
+	}
+
+	public static boolean init(InputStream is) {
 		if(s_model_ok) {
 			return true;
 		}
 
 		try {
-			InputStream is = Geoid.class.getResourceAsStream(FILE_GEOID_GZ);
-			GZIPInputStream gis = new GZIPInputStream(is);
-			InputStreamReader isr = new InputStreamReader(gis);
+			if (is == null) {
+				InputStream iis = Geoid.class.getResourceAsStream(FILE_GEOID_GZ);
+				is = new GZIPInputStream(iis);
+			}
+			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);
 
 			s_model_ok = readGeoidOffsets(br);
@@ -284,8 +291,11 @@ public class Geoid {
 	public static double getGridOffset(Location location) {
 		return getGridOffset(location.getLatitude(), location.getLongitude());
 	}
-	
+
 	public static double getGridOffset(double lat, double lng) {
+		return getGridOffsetS(lat, lng)/100.0d;
+	}
+    public static short getGridOffsetS(double lat, double lng) {
 		if(!s_model_ok) {
 			return OFFSET_INVALID;
 		}
@@ -306,7 +316,7 @@ public class Geoid {
 		int i = latToI(lat);
 		int j = lngToJ(lng);
 		
-		return offset[i][j]/100.0d;
+		return offset[i][j];
 	}
 	
 	private static boolean readGeoidOffsets(BufferedReader br) throws Exception {
