@@ -18,34 +18,34 @@ import org.matthiaszimmermann.location.Location;
  */
 public class Geoid {
 
-	public static final short OFFSET_INVALID = -0x8000;
-	public static final short OFFSET_MISSING = 0x7fff;
+	private static final short OFFSET_INVALID = -0x8000;
+	private static final short OFFSET_MISSING = 0x7fff;
 
-	public static final String FILE_GEOID = "EGM96complete.dat";
-	public static final String FILE_GEOID_GZ = "/"+FILE_GEOID + ".gz";
+	private static final String FILE_GEOID = "EGM96complete.dat";
+	private static final String FILE_GEOID_GZ = "/"+FILE_GEOID + ".gz";
 
 	private static final int ROWS = 719;  // (89.75 + 89.75)/0.25 + 1 = 719
 	private static final int COLS = 1440; // 359.75/0.25 + 1 = 1440
 
-	public static final double LATITUDE_MAX = 90.0; 
-	public static final double LATITUDE_MAX_GRID = 89.74; 
-	public static final double LATITUDE_ROW_FIRST = 89.50; 
-	public static final double LATITUDE_ROW_LAST = -89.50; 
-	public static final double LATITUDE_MIN_GRID = -89.74; 
-	public static final double LATITUDE_MIN = -90.0; 
-	public static final double LATITUDE_STEP = 0.25; 
+	private static final double LATITUDE_MAX = 90.0;
+	private static final double LATITUDE_MAX_GRID = 89.74;
+	private static final double LATITUDE_ROW_FIRST = 89.50;
+	private static final double LATITUDE_ROW_LAST = -89.50;
+	private static final double LATITUDE_MIN_GRID = -89.74;
+	private static final double LATITUDE_MIN = -90.0;
+	private static final double LATITUDE_STEP = 0.25;
 
-	public static final double LONGITIDE_MIN = 0.0; 
-	public static final double LONGITIDE_MIN_GRID = 0.0; 
-	public static final double LONGITIDE_MAX_GRID = 359.75; 
-	public static final double LONGITIDE_MAX = 360.0; 
-	public static final double LONGITIDE_STEP = 0.25; 
+	private static final double LONGITIDE_MIN = 0.0;
+	private static final double LONGITIDE_MIN_GRID = 0.0;
+	private static final double LONGITIDE_MAX_GRID = 359.75;
+	private static final double LONGITIDE_MAX = 360.0;
+	private static final double LONGITIDE_STEP = 0.25;
 
-	public static final String INVALID_OFFSET = "-9999.99";
-	public static final String COMMENT_PREFIX = "//";
+	private static final String INVALID_OFFSET = "-9999.99";
+	private static final String COMMENT_PREFIX = "//";
 
 	//Store in 'fixed point format' 16-bit short (in 1/100m (cm)) instead of 64-bit double
-	private static short [][] offset = new short[ROWS][COLS];
+	private static final short [][] offset = new short[ROWS][COLS];
 	private static short offset_north_pole = 0;
 	private static short offset_south_pole = 0;
 	private static boolean s_model_ok = false;
@@ -60,13 +60,12 @@ public class Geoid {
 		double lng = Double.parseDouble(args[1]);
 		
 		init();
-		
-		StringBuffer b = new StringBuffer();
-		b.append("lat=").append(lat).append(" ");
-		b.append("long=").append(lng).append(" ");
-		b.append("offset=").append(getOffset(new Location(lat, lng)));
-		
-		System.out.println(b.toString());
+
+		String b = "lat=" + lat + " " +
+				"long=" + lng + " " +
+				"offset=" + getOffset(new Location(lat, lng));
+
+		System.out.println(b);
 	}
 
 	public static boolean init() {
@@ -171,10 +170,10 @@ public class Geoid {
 	
 	/**
 	 * bilinearInterpolation according to description on wikipedia
-	 * {@link https://en.wikipedia.org/wiki/Bilinear_interpolation}
-	 * @return
+	 * @see <a href="https://en.wikipedia.org/wiki/Bilinear_interpolation">wikipedia Bilinear_interpolation</a>
+	 * @return  the lineary interpolated value
 	 */
-	static double bilinearInterpolation(Location target, Location q11, Location q12, Location q21, Location q22) {
+	private static double bilinearInterpolation(Location target, Location q11, Location q12, Location q21, Location q22) {
 		double fq11 = getGridOffset(q11); // lower left
 		double fq12 = getGridOffset(q12); // upper left
 		double fq21 = getGridOffset(q21); // lower right
@@ -207,10 +206,10 @@ public class Geoid {
 	 * within any point of a unit tile in (u,v) space.
 	 * If you want to create a spline surface, you can make a two dimensional array of such objects.
 	 * 
-	 * {@link http://mrl.nyu.edu/~perlin/cubic/Cubic_java.html}
-	 * @return
+	 * @see <a href="http://mrl.nyu.edu/~perlin/cubic/Cubic_java.html">Gubic</a>
+	 * @return bicubic spline
 	 */	
-    static double bicubicSplineInterpolation(Location target, Location [][] grid) {
+    private static double bicubicSplineInterpolation(Location target, Location[][] grid) {
 		double G [][] = new double [4][4];
 
 		for(int i = 0; i < 4; i++) {
@@ -229,7 +228,7 @@ public class Geoid {
     	return c.eval(u, v);
     }	
     
-	static Location getUpperLocation(Location location) {
+	private static Location getUpperLocation(Location location) {
 		double lat = location.getLatitude();
 		double lng = location.getLongitude();
 		
@@ -252,7 +251,7 @@ public class Geoid {
 		return new Location(lat, lng);
 	}
 	
-	static Location getLowerLocation(Location location) {
+	private static Location getLowerLocation(Location location) {
 		double lat = location.getLatitude();
 		double lng = location.getLongitude();
 		
@@ -275,21 +274,21 @@ public class Geoid {
 		return new Location(lat, lng);
 	}
 	
-	static Location getLeftLocation(Location location) {
+	private static Location getLeftLocation(Location location) {
 		double lat = location.getLatitude();
 		double lng = location.getLongitude();
 		
 		return new Location(lat, lng - LATITUDE_STEP);
 	}
 	
-	static Location getRightLocation(Location location) {
+	private static Location getRightLocation(Location location) {
 		double lat = location.getLatitude();
 		double lng = location.getLongitude();
 		
 		return new Location(lat, lng + LATITUDE_STEP);
 	}
 	
-	static Location getGridFloorLocation(double lat, double lng) {
+	private static Location getGridFloorLocation(double lat, double lng) {
 		Location floor = (new Location(lat, lng)).floor(LATITUDE_STEP);
 		double latFloor = floor.getLatitude();
 		
@@ -306,14 +305,14 @@ public class Geoid {
 		return new Location(latFloor, floor.getLongitude());
 	}
 	
-	public static double getGridOffset(Location location) {
+	private static double getGridOffset(Location location) {
 		return getGridOffset(location.getLatitude(), location.getLongitude());
 	}
 
-	public static double getGridOffset(double lat, double lng) {
+	private static double getGridOffset(double lat, double lng) {
 		return getGridOffsetS(lat, lng)/100.0d;
 	}
-    public static short getGridOffsetS(double lat, double lng) {
+    private static short getGridOffsetS(double lat, double lng) {
 		if(!s_model_ok) {
 			return OFFSET_INVALID;
 		}
@@ -360,8 +359,8 @@ public class Geoid {
 				short off = (short)(Double.parseDouble(t.nextToken())*100d);
 
 				if(latLongOk(lat, lng, l)) {
-					int i_lat = 0;
-					int j_lng = 0;
+					int i_lat;
+					int j_lng;
 
 					if(lat == LATITUDE_MAX) {
 						offset_north_pole = off;
@@ -399,8 +398,8 @@ public class Geoid {
 	//The file is created from the standard file with the following snippet:
 	//   cat /cygdrive/f/temp/EGM96complete.dat | perl -ne 'BEGIN{open F,">egm96-delta.dat";$e0=0;} \
 	//; if(/^\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/){$e1=sprintf "%.0f", $3*100;$e=$e1-$e0; $e0=$e1; \
-	//; if(-0x40<=$e && $e <0x40){$e+=0x40; print F pack "C",$e; }\
-	//; elsif (-0x4000<=$e && $e<0x4000){$e+=0xc000; print F pack "n",$e;}else{die "offset out of bounds";}} \
+	//; if(-0x40<=$e && $e <0x40){$e+=0x40; print F pack "C",$e; \
+	//; }elsif (-0x4000<=$e && $e<0x4000){$e+=0xc000; print F pack "n",$e;}else{die "offset out of bounds";}} \
 	//; END{print F pack "n",0xc000-$e1; close F}'
 
 	//Only the offset is stored, assuming coordinates are OK

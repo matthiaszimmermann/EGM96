@@ -2,13 +2,13 @@ package org.matthiaszimmermann.location;
 
 public class Location {
 	// TODO verify if this is meaningful (eg. if this is sufficient for cm accuracy on earth)
-	public static final double EPSILON = 0.00000001;
+	private static final double EPSILON = 0.00000001;
 	
-	public static final double LATITUDE_MIN_STRICT = -90.0;
-	public static final double LATITUDE_MAX_STRICT = 90.0;
+	private static final double LATITUDE_MIN_STRICT = -90.0;
+	private static final double LATITUDE_MAX_STRICT = 90.0;
 	
-	public static final double LONGITUDE_MIN_STRICT = 0.0;
-	public static final double LONGITUDE_MAX_STRICT = 360.0;
+	private static final double LONGITUDE_MIN_STRICT = 0.0;
+	private static final double LONGITUDE_MAX_STRICT = 360.0;
 
 	private double m_lat;
 	private double m_lng;
