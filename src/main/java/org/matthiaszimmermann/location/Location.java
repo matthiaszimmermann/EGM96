@@ -2,7 +2,7 @@ package org.matthiaszimmermann.location;
 
 public class Location {
 	// TODO verify if this is meaningful (eg. if this is sufficient for cm accuracy on earth)
-	private static final double EPSILON = 0.00000001;
+	public static final double EPSILON = 0.00000001;
 
 	private double m_lat;
 	private double m_lng;
@@ -84,6 +84,17 @@ public class Location {
 
 		double latFloor = Math.floor(getLatitude() / org.matthiaszimmermann.location.egm96.Geoid.LATITUDE_STEP) * org.matthiaszimmermann.location.egm96.Geoid.LATITUDE_STEP;
 		double lngFloor = Math.floor(getLongitude() / org.matthiaszimmermann.location.egm96.Geoid.LATITUDE_STEP) * org.matthiaszimmermann.location.egm96.Geoid.LATITUDE_STEP;
+		
+		return new Location(latFloor, lngFloor);
+	}
+
+	public Location floor(double precision) {
+		if(precision <= 0.0 || precision > 1.0) {
+			throw new IllegalArgumentException("precision out of bounds (0,1]");
+		}
+		
+		double latFloor = Math.floor(getLatitude() / precision) * precision;
+		double lngFloor = Math.floor(getLongitude() / precision) * precision;
 		
 		return new Location(latFloor, lngFloor);
 	}

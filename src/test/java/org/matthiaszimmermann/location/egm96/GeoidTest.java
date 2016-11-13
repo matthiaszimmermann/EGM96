@@ -86,59 +86,59 @@ public class GeoidTest {
 	@Test
 	public void testGetGridOffsetInvalidParams() {
 		// invalid grid latitudes
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(91.0, 0.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(89.7, 0.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(33.3, 0.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.3, 0.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-0.01, 0.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-65.43, 0.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-89.7, 0.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-90.5, 0.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(91.0, 0.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(89.7, 0.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(33.3, 0.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.3, 0.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-0.01, 0.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-65.43, 0.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-89.7, 0.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-90.5, 0.0), EPSILON);
 
 		// invalid grid longitudes
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, -210.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, -180.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, -90.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, -1.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, -0.01), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 359.8), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 360.0), EPSILON);
-		Assert.assertEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 500.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, -210.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, -180.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, -90.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, -1.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, -0.01), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 359.8), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 360.0), EPSILON);
+		Assert.assertEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 500.0), EPSILON);
 	}
 
 	@Test
 	public void testGetGridOffsetValidParams() {
 		// valid grid latitudes		
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(90.0, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(89.74, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(89.50, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(89.25, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(43.75, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(17.5, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(9.25, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-22.0, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-55.25, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-72.5, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-80.75, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-89.74, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(-90.0, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(90.0, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(89.74, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(89.50, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(89.25, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(43.75, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(17.5, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(9.25, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-22.0, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-55.25, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-72.5, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-80.75, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-89.74, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(-90.0, 0.0), EPSILON);
 
 		// valid grid longitudes		
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 0.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 0.25), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 0.5), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 0.75), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 1.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 30.25), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 95.75), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 123.5), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 180.0), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 230.75), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 310.25), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 359.25), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 359.5), EPSILON);
-		Assert.assertNotEquals(Geoid.OFFSET_INVALID, Geoid.getGridOffset(0.0, 359.75), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 0.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 0.25), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 0.5), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 0.75), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 1.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 30.25), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 95.75), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 123.5), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 180.0), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 230.75), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 310.25), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 359.25), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 359.5), EPSILON);
+		Assert.assertNotEquals(Geoid.INVALID_GEOID_OFFSET, Geoid.getGridOffset(0.0, 359.75), EPSILON);
 
 	}
 

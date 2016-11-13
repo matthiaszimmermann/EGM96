@@ -15,6 +15,7 @@ import org.matthiaszimmermann.location.Location;
 public class Geoid {
 
 	private static final short OFFSET_INVALID = -0x8000;
+	public static final double INVALID_GEOID_OFFSET = OFFSET_INVALID/100.0;
 
 	private static final int ROWS = 719;  // (89.75 + 89.75)/0.25 + 1 = 719
 	private static final int COLS = 1440; // 359.75/0.25 + 1 = 1440
@@ -39,6 +40,28 @@ public class Geoid {
 	private static short offset_south_pole = 0;
 	private static boolean s_model_ok = false;
 
+	public static void main(String [] args) {
+		if(args.length != 2) {
+			System.err.println("usage: java Geoid lat long");
+			System.exit(-1);
+		}
+		
+		double lat = Double.parseDouble(args[0]);
+		double lng = Double.parseDouble(args[1]);
+		
+		init();
+
+		String b = "lat=" + lat + " " +
+				"long=" + lng + " " +
+				"offset=" + getOffset(new Location(lat, lng));
+
+		System.out.println(b);
+	}
+	
+	public static boolean init() {
+		return init(Geoid.class.getResourceAsStream("/egm96-delta.dat"));
+	}
+	
 	public static boolean init(InputStream is) {
 		if(s_model_ok) {
 			return true;
@@ -61,7 +84,7 @@ public class Geoid {
         return getOffset(location);
     }
 
-    private static double getOffset(Location location) {
+    public static double getOffset(Location location) {
 		double lat = location.getLatitude();
 		double lng = location.getLongitude();
 		
@@ -253,7 +276,7 @@ public class Geoid {
 		return getGridOffset(location.getLatitude(), location.getLongitude());
 	}
 
-	private static double getGridOffset(double lat, double lng) {
+	public static double getGridOffset(double lat, double lng) {
 		return getGridOffsetS(lat, lng)/100.0d;
 	}
     private static short getGridOffsetS(double lat, double lng) {
