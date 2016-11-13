@@ -1,11 +1,7 @@
 package org.matthiaszimmermann.location.egm96;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.StringTokenizer;
-import java.util.zip.GZIPInputStream;
 
 import org.matthiaszimmermann.location.Location;
 
@@ -19,10 +15,6 @@ import org.matthiaszimmermann.location.Location;
 public class Geoid {
 
 	private static final short OFFSET_INVALID = -0x8000;
-	private static final short OFFSET_MISSING = 0x7fff;
-
-	private static final String FILE_GEOID = "EGM96complete.dat";
-	private static final String FILE_GEOID_GZ = "/"+FILE_GEOID + ".gz";
 
 	private static final int ROWS = 719;  // (89.75 + 89.75)/0.25 + 1 = 719
 	private static final int COLS = 1440; // 359.75/0.25 + 1 = 1440
@@ -33,7 +25,7 @@ public class Geoid {
 	private static final double LATITUDE_ROW_LAST = -89.50;
 	private static final double LATITUDE_MIN_GRID = -89.74;
 	private static final double LATITUDE_MIN = -90.0;
-	private static final double LATITUDE_STEP = 0.25;
+	public static final double LATITUDE_STEP = 0.25;
 
 	private static final double LONGITIDE_MIN = 0.0;
 	private static final double LONGITIDE_MIN_GRID = 0.0;
@@ -41,59 +33,11 @@ public class Geoid {
 	private static final double LONGITIDE_MAX = 360.0;
 	private static final double LONGITIDE_STEP = 0.25;
 
-	private static final String INVALID_OFFSET = "-9999.99";
-	private static final String COMMENT_PREFIX = "//";
-
 	//Store in 'fixed point format' 16-bit short (in 1/100m (cm)) instead of 64-bit double
 	private static final short [][] offset = new short[ROWS][COLS];
 	private static short offset_north_pole = 0;
 	private static short offset_south_pole = 0;
 	private static boolean s_model_ok = false;
-
-	public static void main(String [] args) {
-		if(args.length != 2) {
-			System.err.println("usage: java Geoid lat long");
-			System.exit(-1);
-		}
-		
-		double lat = Double.parseDouble(args[0]);
-		double lng = Double.parseDouble(args[1]);
-		
-		init();
-
-		String b = "lat=" + lat + " " +
-				"long=" + lng + " " +
-				"offset=" + getOffset(new Location(lat, lng));
-
-		System.out.println(b);
-	}
-
-	public static boolean init() {
-		return init(null);
-	}
-
-	public static boolean init(InputStream is) {
-		if(s_model_ok) {
-			return true;
-		}
-
-		try {
-			if (is == null) {
-				InputStream iis = Geoid.class.getResourceAsStream(FILE_GEOID_GZ);
-				is = new GZIPInputStream(iis);
-			}
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
-
-			s_model_ok = readGeoidOffsets(br);
-		}
-		catch (Exception e) {
-			s_model_ok = false;
-			System.err.println("failed to read file '"+FILE_GEOID_GZ+"'");
-		}
-
-		return s_model_ok;
-	}
 
 	public static boolean initD(InputStream is) {
 		if(s_model_ok) {
@@ -117,7 +61,7 @@ public class Geoid {
         return getOffset(location);
     }
 
-    public static double getOffset(Location location) {
+    private static double getOffset(Location location) {
 		double lat = location.getLatitude();
 		double lng = location.getLongitude();
 		
@@ -223,7 +167,7 @@ public class Geoid {
 				
 		double u = (target.getLatitude() - u1 + LATITUDE_STEP) / (4 * LATITUDE_STEP);
 		double v = (target.getLongitude() - v1 + LONGITIDE_STEP) / (4 * LONGITIDE_STEP);
-		Cubic c = new Cubic(Cubic.BEZIER, G);
+		Cubic c = new Cubic(G);
 		
     	return c.eval(u, v);
     }	
@@ -289,7 +233,7 @@ public class Geoid {
 	}
 	
 	private static Location getGridFloorLocation(double lat, double lng) {
-		Location floor = (new Location(lat, lng)).floor(LATITUDE_STEP);
+		Location floor = (new Location(lat, lng)).floor();
 		double latFloor = floor.getLatitude();
 		
 		if(lat >= LATITUDE_MAX_GRID && lat < LATITUDE_MAX) { 
@@ -334,64 +278,6 @@ public class Geoid {
 		int j = lngToJ(lng);
 		
 		return offset[i][j];
-	}
-
-	private static boolean readGeoidOffsets(BufferedReader br) throws Exception {
-		assignMissingOffsets();
-
-		String line = br.readLine();
-		int l = 1; // line counter
-
-		while(line != null) {
-			l++;
-
-			// skip comment lines
-			if(lineIsOk(line)) {
-				StringTokenizer t = new StringTokenizer(line);
-				int c = t.countTokens();
-
-				if(c != 3) {
-					System.err.println("error on line " + l + ": found " + c + " tokens (expected 3): '" + line + "'");
-				}
-
-				double lat = Double.parseDouble(t.nextToken());
-				double lng = Double.parseDouble(t.nextToken());
-				short off = (short)(Double.parseDouble(t.nextToken())*100d);
-
-				if(latLongOk(lat, lng, l)) {
-					int i_lat;
-					int j_lng;
-
-					if(lat == LATITUDE_MAX) {
-						offset_north_pole = off;
-					}
-					else if(lat == LATITUDE_MIN) {
-						offset_south_pole = off;
-					}
-					else {
-						if(lat == LATITUDE_MAX_GRID) {
-							i_lat = 0;
-						}
-						else if(lat == LATITUDE_MIN_GRID) {
-							i_lat = ROWS - 1;
-						}
-						else {
-							i_lat = (int) ((LATITUDE_MAX - lat) / LATITUDE_STEP) - 1;
-						}
-
-						j_lng = (int) (lng / LONGITIDE_STEP);
-
-						offset[i_lat][j_lng] = off;
-					}
-				}
-			}
-
-			line = br.readLine();
-		}
-
-		// somewhat simplistic criteria:
-		// test if we have a line for each array field plus the 2 poles
-		return !hasMissingOffsets();
 	}
 
     //Get offsets from a definition file where the data is stored in a compressed format
@@ -460,106 +346,27 @@ public class Geoid {
 		return allRead;
 	}
 
-	private static boolean lineIsOk(String line) {
-		// skip comment lines
-		if(line.startsWith(COMMENT_PREFIX)) {
-			return false;
-		}
-
-		// skip lines with not offset value
-		if(line.endsWith(INVALID_OFFSET)) {
-			return false;
-		}
-
-		return true;
-	}
-
-	private static void assignMissingOffsets() {
-		offset_north_pole = OFFSET_MISSING;
-		offset_south_pole = OFFSET_MISSING;
-		
-		for(int i = 0; i < ROWS; i++) {
-			for(int j = 0; j < COLS; j++) {
-				offset[i][j] = OFFSET_MISSING;
-			}
-		}
-	}
-	
-	private static boolean hasMissingOffsets() {
-		if(offset_north_pole == OFFSET_MISSING) { return true; }
-		if(offset_south_pole == OFFSET_MISSING) { return true; }
-		
-		for(int i = 0; i < ROWS; i++) {
-			for(int j = 0; j < COLS; j++) {
-				if(offset[i][j] == OFFSET_MISSING) {
-					return true;
-				}
-			}
-		}
-		
-		return false;
-	}
-	
-	private static boolean latLongOk(double lat, double lng, int line) {
-		if(!latOk(lat)) {
-			System.err.println("error on line " + line + ": latitude " + lat + " out or range [" + LATITUDE_MIN + "," + LATITUDE_MAX + "]");
-			return false;
-		}
-
-		if(!lngOkGrid(lng)) {
-			System.err.println("error on line " + line + ": longitude " + lng + " out or range [" + LONGITIDE_MIN_GRID + "," + LONGITIDE_MAX_GRID + "]");
-			return false;
-		}
-
-		return true;
-	}
-	
 	private static boolean latOk(double lat) {
-		boolean lat_in_bounds = lat >= LATITUDE_MIN && lat <= LATITUDE_MAX;
-		return lat_in_bounds;
+		return lat >= LATITUDE_MIN && lat <= LATITUDE_MAX;
 	}
 	
 	@SuppressWarnings("unused")
 	private static boolean lngOk(double lng) {
-		boolean lng_in_bounds = lng >= LONGITIDE_MIN && lng <= LONGITIDE_MAX;
-		return lng_in_bounds;
+		return lng >= LONGITIDE_MIN && lng <= LONGITIDE_MAX;
 	} 
 	
 	private static boolean lngOkGrid(double lng) {
-		boolean lng_in_bounds = lng >= LONGITIDE_MIN_GRID && lng <= LONGITIDE_MAX_GRID;
-		return lng_in_bounds;
+		return lng >= LONGITIDE_MIN_GRID && lng <= LONGITIDE_MAX_GRID;
 	}
 	
 	private static boolean latIsGridPoint(double lat) {
-		if(!latOk(lat)) {
-			return false;
-		}
-		
-		if(latIsPole(lat)) {
-			return true;
-		}
-		
-		if(lat == LATITUDE_MAX_GRID || lat == LATITUDE_MIN_GRID) {
-			return true;
-		}
-		
-		if(lat <= LATITUDE_ROW_FIRST && lat >= LATITUDE_ROW_LAST && lat / LATITUDE_STEP == Math.round(lat / LATITUDE_STEP)) {
-			return true;
-		}
-		
-		return false;
+		return latOk(lat) && (latIsPole(lat) || lat == LATITUDE_MAX_GRID || lat == LATITUDE_MIN_GRID || lat <= LATITUDE_ROW_FIRST && lat >= LATITUDE_ROW_LAST && lat / LATITUDE_STEP == Math.round(lat / LATITUDE_STEP));
+
 	}
 	
 	private static boolean lngIsGridPoint(double lng) {
-		if(!lngOkGrid(lng)) {
-			return false;
-		}
-		
-		if(lng / LONGITIDE_STEP == Math.round(lng / LONGITIDE_STEP)) {
-			return true;
-		}
-		
-		return false;
+		return lngOkGrid(lng) && lng / LONGITIDE_STEP == Math.round(lng / LONGITIDE_STEP);
+
 	}
 	
 	private static boolean latIsPole(double lat) {
