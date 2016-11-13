@@ -1,5 +1,6 @@
 package org.matthiaszimmermann.location.egm96;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -86,7 +87,7 @@ public class Geoid {
 			BufferedReader br = new BufferedReader(isr);
 
 			s_model_ok = readGeoidOffsets(br);
-		} 
+		}
 		catch (Exception e) {
 			s_model_ok = false;
 			System.err.println("failed to read file '"+FILE_GEOID_GZ+"'");
@@ -95,7 +96,24 @@ public class Geoid {
 		return s_model_ok;
 	}
 
-    public static double getOffset(double lat, double lon) {
+	public static boolean initD(InputStream is) {
+		if(s_model_ok) {
+			return true;
+		}
+
+		try {
+
+			s_model_ok = readGeoidOffsetsD(new BufferedInputStream(is));
+		}
+		catch (Exception e) {
+			s_model_ok = false;
+			System.err.println("failed to read stream '"+is.toString()+"'");
+		}
+
+		return s_model_ok;
+	}
+
+	public static double getOffset(double lat, double lon) {
         Location location = new Location(lat, lon);
         return getOffset(location);
     }
@@ -318,10 +336,10 @@ public class Geoid {
 		
 		return offset[i][j];
 	}
-	
+
 	private static boolean readGeoidOffsets(BufferedReader br) throws Exception {
 		assignMissingOffsets();
-		
+
 		String line = br.readLine();
 		int l = 1; // line counter
 
@@ -341,7 +359,7 @@ public class Geoid {
 				double lng = Double.parseDouble(t.nextToken());
 				short off = (short)(Double.parseDouble(t.nextToken())*100d);
 
-				if(latLongOk(lat, lng, l)) {					
+				if(latLongOk(lat, lng, l)) {
 					int i_lat = 0;
 					int j_lng = 0;
 
@@ -371,10 +389,76 @@ public class Geoid {
 
 			line = br.readLine();
 		}
-		
+
 		// somewhat simplistic criteria:
 		// test if we have a line for each array field plus the 2 poles
 		return !hasMissingOffsets();
+	}
+
+    //Get offsets from a definition file where the data is stored in a compressed format
+	//The file is created from the standard file with the following snippet:
+	//   cat /cygdrive/f/temp/EGM96complete.dat | perl -ne 'BEGIN{open F,">egm96-delta.dat";$e0=0;} \
+	//; if(/^\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)/){$e1=sprintf "%.0f", $3*100;$e=$e1-$e0; $e0=$e1; \
+	//; if(-0x40<=$e && $e <0x40){$e+=0x40; print F pack "C",$e; }\
+	//; elsif (-0x4000<=$e && $e<0x4000){$e+=0xc000; print F pack "n",$e;}else{die "offset out of bounds";}} \
+	//; END{print F pack "n",0xc000-$e1; close F}'
+
+	//Only the offset is stored, assuming coordinates are OK
+	//Data is stored in 'fixed point', resolution 1/100m (cm)
+	//The data is stored as difference to the previous value (as the values are correlated and can be fit in one byte normally)
+	//If the difference is more than fit in 7 bits (+/-0.64m), two bytes are used
+	//One byte data is stored with an offset of 64, so the first bit is never set
+	//For two bytes, the data is stored as 0xc000+offset, so first bit is always set
+	//Last, the south pole offset is added negatively, to get last offset as 0 (used as a check)
+
+	private static boolean readGeoidOffsetsD(BufferedInputStream is) throws Exception {
+		//BufferedReader _may_ increase the performance
+		final byte[] buf = new byte[1000];
+		int bufRead = 0;
+		byte prevByte=0;
+		int off = 0;
+		int offsetCount = -1; //NorthPole is first
+		boolean allRead = false;
+		boolean prevIsTwo=false;
+		do {
+			int i = 0;
+			while (i < bufRead) {
+				byte c = buf[i];
+				i++;
+				if (prevIsTwo) {
+					off += ((((prevByte&0xff) <<8) |(c&0xff))-0xc000);
+					prevIsTwo=false;
+				} else if ((c & 0x80) == 0) {
+					off += ((c&0xff) - 0x40);
+				} else {
+					prevIsTwo = true;
+				}
+				prevByte=c;
+				if (!prevIsTwo) {
+					if (offsetCount < 0) {
+						offset_north_pole = (short) off;
+					} else if (offsetCount == ROWS * COLS) {
+						offset_south_pole = (short) off;
+					} else if (offsetCount == 1 + ROWS * COLS) {
+						if (off == 0) {
+							allRead = true;
+						} else {
+							System.err.println("Offset is not 0 at southpole "+offsetCount / COLS + " "+offsetCount % COLS + " "+off+" "+c);
+						}
+					} else if (offsetCount > ROWS * COLS) {
+						//Should not occur
+						allRead = false;
+						System.err.println("Unexpected data "+offsetCount / COLS + " "+offsetCount % COLS + " "+off+" "+c);
+					} else {
+						offset[offsetCount / COLS][offsetCount % COLS] = (short) off;
+					}
+					offsetCount++;
+				}
+			}
+			bufRead = is.read(buf);
+		} while (bufRead > 0);
+
+		return allRead;
 	}
 
 	private static boolean lineIsOk(String line) {
