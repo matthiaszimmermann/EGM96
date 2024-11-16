@@ -2,7 +2,12 @@
 
 Java Library to compute the EGM96 offset against WGS84 altitudes reported by simple GPS receivers. 
 
-Default use case: The Android location manager API does not return altitues above mean sea level (what would be most useful for normal users) but rather the altitue above the WGS84 reference ellipsoid [1]. To transform the WGS84 altitued to an estimate for the altiude above mean sea level, the offset described by the Earth Gravitational Model 1996 (EGM96) [2] can be added to the WGS84 altitude.
+Default use case: The Android location manager API does not return
+altitues above mean sea level (what would be most useful for normal
+users) but rather the altitue above the WGS84 reference ellipsoid
+[1]. To transform the WGS84 altitued to an estimate for the altiude
+above mean sea level, the offset described by the Earth Gravitational
+Model 1996 (EGM96) [2,7] can be subtracted from the WGS84 altitude.
 
 See the example below for the conversion described above:
 
@@ -23,7 +28,7 @@ private void init() {
  * convert the wgs84 altitude to the egm96 altitude at the provided location.
  */
 public double egm96Altitude(double wgs84altitude, double latitude, double longitude) {
-  return wgs84altitude + Geoid.getOffset(new Location(latitude, longitude));
+  return wgs84altitude - Geoid.getOffset(new Location(latitude, longitude));
 }
 ```
 
@@ -57,3 +62,4 @@ For test data the file GeoidHeights.dat.gz made available with the GeographicLib
 [4] http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/intpt.html<br>
 [5] http://geographiclib.sourceforge.net/cgi-bin/GeoidEval<br>
 [6] http://geographiclib.sourceforge.net/html/geoid.html#testgeoid<br>
+[7] https://vdatum.noaa.gov/docs/datums.html<br>
